@@ -1,31 +1,21 @@
-const { Telegraf } = require('telegraf');
-const config = require('../config');
+const { mainBot } = require('./src/bot');
 
-// Инициализация основного бота
-const mainBot = new Telegraf(config.TELEGRAM_BOT_TOKEN_ALFA);
+module.exports = (req, res) => {
+  if (req.method === 'POST') {
+    console.log('Received POST request from Telegram');
+    console.log('Request body:', req.body);
 
-mainBot.start((ctx) => {
-  console.log('Received /start command');
-  ctx.reply('Welcome! How can I assist you today?');
-});
-
-mainBot.on('text', async (ctx) => {
-  console.log('Received a text message:', ctx.message.text);
-  
-  try {
-    const userId = ctx.from.id.toString();
-    const userName = ctx.from.first_name || ctx.from.username;
-    const response = `You said: ${ctx.message.text}`;
-    console.log(`Sending response to ${userName} (${userId}): ${response}`);
-    ctx.reply(response);
-  } catch (error) {
-    console.error('Error processing message:', error);
-    ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
+    try {
+      mainBot.handleUpdate(req.body);
+      res.status(200).send('OK');
+    } catch (error) {
+      console.error('Error handling update:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  } else {
+    res.status(200).send('Bot is running...');
   }
-});
-
-module.exports = { mainBot };
-
+};
 
 
 
