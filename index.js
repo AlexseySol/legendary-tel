@@ -3,16 +3,23 @@ const { mainBot } = require('./src/bot');
 // Обработчик для обработки запросов от Telegram через вебхук
 module.exports = (req, res) => {
   if (req.method === 'POST') {
+    console.log('Received a POST request from Telegram');
+    console.log('Request body:', req.body); // Логирование тела запроса
+
     // Обработка обновлений от Telegram
-    mainBot.handleUpdate(req.body, res);
+    mainBot.handleUpdate(req.body, res)
+      .then(() => {
+        res.status(200).send('Update processed');
+      })
+      .catch((error) => {
+        console.error('Error processing update:', error);
+        res.status(500).send('Internal Server Error');
+      });
   } else {
     // Ответ на любые другие запросы
     res.status(200).send('Bot is running...');
   }
 };
-
-
-
 
 
 
