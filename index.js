@@ -1,22 +1,28 @@
-const { mainBot, setupBot } = require('./src/bot');
-const { initBot } = require('./src/services/coffeeService');
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-async function start() {
-  try {
-    await initBot();
-    setupBot();
-    
-    await mainBot.launch();
-    console.log('Bot is running...');
-  } catch (error) {
-    console.error('Error starting bot:', error);
-  }
-}
+// Middleware для обработки JSON
+app.use(express.json());
 
-start();
+// Простой маршрут для проверки работоспособности сервера
+app.get('/api/hello', (req, res) => {
+  res.status(200).json({ message: 'Привет, мир!' });
+});
 
-process.once('SIGINT', () => mainBot.stop('SIGINT'));
-process.once('SIGTERM', () => mainBot.stop('SIGTERM'));
+// Обработка POST-запросов
+app.post('/api/data', (req, res) => {
+  const { name } = req.body;
+  res.status(200).json({ message: `Привет, ${name}!` });
+});
+
+// Запуск сервера
+app.listen(PORT, () => {
+  console.log(`Сервер запущен на порту ${PORT}`);
+});
+
+// Экспорт для Vercel
+module.exports = app;
 
 
 
