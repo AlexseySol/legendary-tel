@@ -1,6 +1,7 @@
 const { Telegraf } = require('telegraf');
 const config = require('../config');
 
+// Инициализация ботов
 const mainBot = new Telegraf(config.TELEGRAM_BOT_TOKEN_ALFA);
 const logBot = new Telegraf(config.NEW_TELEGRAM_BOT_TOKEN);
 const dataBot = new Telegraf(config.TELEGRAM_BOT_TOKEN);
@@ -34,8 +35,6 @@ function setupBot(processMessageFunc) {
 }
 
 module.exports = { mainBot, logBot, dataBot, setupBot };
-
-
 
 
 
