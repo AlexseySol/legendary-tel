@@ -1,27 +1,15 @@
-const { mainBot, setupBot } = require('./src/bot');
-const { initBot } = require('./src/services/coffeeService');
-const { processMessage } = require('./src/handlers/messageHandlers');
+const { mainBot } = require('./src/bot');
 
-async function start() {
-  try {
-    await initBot();
-    setupBot(processMessage);
-    
-    // Запуск бота
-    await mainBot.launch();
-    
-    console.log('Bot is running...');
-  } catch (error) {
-    console.error('Error starting bot:', error);
+// Обработчик для обработки запросов от Telegram через вебхук
+module.exports = (req, res) => {
+  if (req.method === 'POST') {
+    // Обработка обновлений от Telegram
+    mainBot.handleUpdate(req.body, res);
+  } else {
+    // Ответ на любые другие запросы
+    res.status(200).send('Bot is running...');
   }
-}
-
-start();
-
-// Включение graceful stop
-process.once('SIGINT', () => mainBot.stop('SIGINT'));
-process.once('SIGTERM', () => mainBot.stop('SIGTERM'));
-
+};
 
 
 
