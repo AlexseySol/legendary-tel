@@ -1,4 +1,4 @@
-const { mainBot, logBot, dataBot } = require('./src/bot');
+const { mainBot } = require('./src/bot');  // Подключение основного бота
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
@@ -6,20 +6,16 @@ module.exports = async (req, res) => {
     console.log('Request body:', req.body);
 
     try {
-      // Обработка обновлений от Telegram
+      // Обработка обновлений от Telegram через основной бот
       await mainBot.handleUpdate(req.body);
-
-      // Дополнительные действия с лог-ботом и ботом для данных
-      await logBot.telegram.sendMessage(process.env.NEW_TELEGRAM_CHAT_ID, 'Received a new update.');
-      await dataBot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID, 'Processing update...');
-
       res.status(200).send('OK');
     } catch (error) {
       console.error('Error handling update:', error);
       res.status(500).send('Internal Server Error');
     }
   } else {
-    res.status(404).send('Not Found');  // Возврат 404 для всех запросов, кроме POST
+    // Возврат 404 для всех запросов, кроме POST
+    res.status(404).send('Not Found');
   }
 };
 
