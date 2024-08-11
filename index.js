@@ -6,14 +6,14 @@ module.exports = (req, res) => {
     console.log('Request body:', req.body);
 
     try {
-      mainBot.handleUpdate(req.body);
+      mainBot.handleUpdate(req.body);  // Обработка обновлений от Telegram
       res.status(200).send('OK');
     } catch (error) {
       console.error('Error handling update:', error);
       res.status(500).send('Internal Server Error');
     }
   } else {
-    res.status(200).send('Bot is running...');
+    res.status(404).send('Not Found');  // Ответ на любые другие запросы
   }
 };
 
