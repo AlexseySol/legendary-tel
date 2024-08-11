@@ -1,15 +1,12 @@
 const { mainBot, setupBot } = require('./src/bot');
 const { initBot } = require('./src/services/coffeeService');
-const { processMessage } = require('./src/handlers/messageHandlers');
 
 async function start() {
   try {
     await initBot();
-    setupBot(processMessage);
+    setupBot();
     
-    // Запуск бота
     await mainBot.launch();
-    
     console.log('Bot is running...');
   } catch (error) {
     console.error('Error starting bot:', error);
@@ -18,10 +15,8 @@ async function start() {
 
 start();
 
-// Включение graceful stop
 process.once('SIGINT', () => mainBot.stop('SIGINT'));
 process.once('SIGTERM', () => mainBot.stop('SIGTERM'));
-
 
 
 

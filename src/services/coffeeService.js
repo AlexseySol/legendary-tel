@@ -13,7 +13,7 @@ async function loadCoffeeData() {
     console.warn(`Error loading coffee data: ${error.message}`);
     coffeeData = {
       'Эспрессо': { description: 'Крепкий кофе', price: 30 },
-      'Капучино': { description: 'Кофе с молочной пенкой', price: 40 }
+      'Капучино': { description: 'Кофе с молочной пенкой', price: 40 },
     };
     console.warn('Using fallback coffee data');
   }
@@ -23,8 +23,8 @@ async function initBot() {
   if (!botInitialized) {
     console.log('Initializing bot...');
     await loadCoffeeData();
-    console.log('Bot initialized');
     botInitialized = true;
+    console.log('Bot initialized');
   } else {
     console.log('Bot already initialized');
   }
