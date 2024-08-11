@@ -13,7 +13,7 @@ module.exports = (req, res) => {
       res.status(500).send('Internal Server Error');
     }
   } else {
-    res.status(404).send('Not Found');  // Ответ на любые другие запросы
+    res.status(404).send('Not Found');  // Возврат 404 для всех запросов, кроме POST
   }
 };
 
