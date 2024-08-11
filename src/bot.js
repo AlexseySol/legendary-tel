@@ -1,50 +1,30 @@
 const { Telegraf } = require('telegraf');
 const config = require('../config');
 
-// Инициализация ботов
+// Инициализация основного бота
 const mainBot = new Telegraf(config.TELEGRAM_BOT_TOKEN_ALFA);
-const logBot = new Telegraf(config.NEW_TELEGRAM_BOT_TOKEN);
-const dataBot = new Telegraf(config.TELEGRAM_BOT_TOKEN);
 
-function setupBot(processMessageFunc) {
-  // Обработка команды /start
-  mainBot.start((ctx) => {
-    console.log(`Received /start command from ${ctx.from.first_name || ctx.from.username}`);
-    
-    // Логирование команды /start
-    const logMessage = `Bot received /start command from ${ctx.from.first_name || ctx.from.username}`;
-    
-    // Отправка логов в лог-бот
-    logBot.telegram.sendMessage(config.NEW_TELEGRAM_CHAT_ID, logMessage)
-      .catch((error) => {
-        console.error('Error sending log message:', error);
-      });
-    
-    // Отправка приветственного сообщения
-    ctx.reply('Welcome! How can I assist you today?');
-  });
+mainBot.start((ctx) => {
+  console.log('Received /start command');
+  ctx.reply('Welcome! How can I assist you today?');
+});
 
-  // Обработка текстовых сообщений
-  mainBot.on('text', async (ctx) => {
-    console.log('Received a message from Telegram');
+mainBot.on('text', async (ctx) => {
+  console.log('Received a text message:', ctx.message.text);
+  
+  try {
     const userId = ctx.from.id.toString();
     const userName = ctx.from.first_name || ctx.from.username;
-    const userMessage = ctx.message.text;
+    const response = `You said: ${ctx.message.text}`;
+    console.log(`Sending response to ${userName} (${userId}): ${response}`);
+    ctx.reply(response);
+  } catch (error) {
+    console.error('Error processing message:', error);
+    ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
+  }
+});
 
-    try {
-      const response = await processMessageFunc(userId, userName, userMessage);
-      console.log(`Sending response to ${userName} (${userId}): ${response}`);
-      ctx.reply(response);
-    } catch (error) {
-      console.error('Error processing message:', error);
-      ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
-    }
-  });
-}
-
-module.exports = { mainBot, logBot, dataBot, setupBot };
-
-
+module.exports = { mainBot };
 
 
 

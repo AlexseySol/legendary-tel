@@ -15,14 +15,18 @@ async function loadCoffeeData() {
       'Эспрессо': { description: 'Крепкий кофе', price: 30 },
       'Капучино': { description: 'Кофе с молочной пенкой', price: 40 }
     };
+    console.warn('Using fallback coffee data');
   }
 }
 
 async function initBot() {
   if (!botInitialized) {
+    console.log('Initializing bot...');
     await loadCoffeeData();
     console.log('Bot initialized');
     botInitialized = true;
+  } else {
+    console.log('Bot already initialized');
   }
 }
 
@@ -31,4 +35,3 @@ function getCoffeeData() {
 }
 
 module.exports = { initBot, getCoffeeData };
-
