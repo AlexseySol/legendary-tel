@@ -6,10 +6,10 @@ async function start() {
   try {
     await initBot();
     setupBot(processMessage);
-
+    
     // Запуск бота
     await mainBot.launch();
-
+    
     console.log('Bot is running...');
   } catch (error) {
     console.error('Error starting bot:', error);
@@ -18,14 +18,14 @@ async function start() {
 
 start();
 
-// Обработчик для Vercel
-module.exports = (req, res) => {
-  res.status(200).send('Bot is running...');
-};
-
 // Включение graceful stop
 process.once('SIGINT', () => mainBot.stop('SIGINT'));
 process.once('SIGTERM', () => mainBot.stop('SIGTERM'));
+
+
+
+
+
 
 
 

@@ -25,13 +25,13 @@ async function processMessage(userId, userName, userMessage) {
 
   userStates[userId].context.push({ role: "user", content: userMessage });
 
-  const promptTemplate = await fs.readFile(path.join(process.cwd(), 'prompts', 'prompt.js'), 'utf8');
-  const filledPrompt = promptTemplate
-    .replace('{{COFFEE_DOCUMENT}}', JSON.stringify(getCoffeeData()))
-    .replace('{{USER_INPUT}}', userMessage)
-    .replace('{{USER_NAME}}', userName);
-
   try {
+    const promptTemplate = await fs.readFile(path.join(process.cwd(), 'prompts', 'prompt.js'), 'utf8');
+    const filledPrompt = promptTemplate
+      .replace('{{COFFEE_DOCUMENT}}', JSON.stringify(getCoffeeData()))
+      .replace('{{USER_INPUT}}', userMessage)
+      .replace('{{USER_NAME}}', userName);
+
     const data = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -56,7 +56,6 @@ async function processMessage(userId, userName, userMessage) {
       
       userStates[userId].context.push({ role: "assistant", content: replyMessageWithTags });
 
-      // Логирование диалога
       const logMessage = `Диалог:\nUser ${userName}: ${userMessage}\nBot: ${replyMessageWithTags}`;
       console.log(logMessage);
       await logBot.telegram.sendMessage(config.NEW_TELEGRAM_CHAT_ID, logMessage);
@@ -90,12 +89,12 @@ async function processMessage(userId, userName, userMessage) {
 
       return replyMessageWithoutTags;
     } else {
-      console.error('Unexpected API response:', data);
+      console.error('Unexpected API response structure:', data);
       return 'Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз чуть позже.';
     }
   } catch (error) {
-    console.error('Error:', error);
-    return 'Извините, в данный момент сервис перегружен. Пожалуйста, попробуйте еще раз через несколько минут.';
+    console.error('Error processing message:', error);
+    return 'Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз через несколько минут.';
   }
 }
 
