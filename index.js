@@ -1,24 +1,32 @@
-const { mainBot } = require('./src/bot');  // Подключение основного бота
+const { mainBot, setupBot } = require('./src/bot');
+const { initBot } = require('./src/services/coffeeService');
+const { processMessage } = require('./src/handlers/messageHandlers');
 
-module.exports = async (req, res) => {
-  if (req.method === 'POST') {
-    console.log('Received POST request from Telegram');
-    console.log('Request body:', req.body);
-
-    try {
-      // Обработка обновлений от Telegram через основной бот
-      await mainBot.handleUpdate(req.body);
-      res.status(200).send('OK');
-    } catch (error) {
-      // Логирование ошибки и отправка ответа с кодом 500 в случае ошибки
-      console.error('Error handling update:', error);
-      res.status(500).send('Internal Server Error');
-    }
-  } else {
-    // Возврат 404 для всех запросов, кроме POST
-    res.status(404).send('Not Found');
+async function start() {
+  try {
+    await initBot();
+    setupBot(processMessage);
+    
+    // Запуск бота
+    await mainBot.launch();
+    
+    console.log('Bot is running...');
+  } catch (error) {
+    console.error('Error starting bot:', error);
   }
-};
+}
+
+start();
+
+// Включение graceful stop
+process.once('SIGINT', () => mainBot.stop('SIGINT'));
+process.once('SIGTERM', () => mainBot.stop('SIGTERM'));
+
+
+
+
+
+
 
 
 
