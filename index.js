@@ -1,52 +1,51 @@
-const { Telegraf } = require('telegraf');
 const express = require('express');
-const { setupBot } = require('./src/bot');
-const { initBot } = require('./src/services/coffeeService');
-const config = require('./config');
+const { Telegraf } = require('telegraf');
 
 const app = express();
-const bot = setupBot();
+const bot = new Telegraf('7336835570:AAEUQvOeTUup5rej7RYQUUbiuKCOoERHtoc');
 
-app.use(express.json());
+// Настройка бота
+bot.start((ctx) => ctx.reply('Добро пожаловать!'));
+bot.on('text', (ctx) => ctx.reply('Получил ваше сообщение!'));
 
-app.post(`/webhook/${config.TELEGRAM_BOT_TOKEN_ALFA}`, async (req, res) => {
-  try {
-    await bot.handleUpdate(req.body);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error in webhook handler:', error);
-    res.sendStatus(500);
-  }
+// Middleware для логирования
+app.use((req, res, next) => {
+  console.log(`Received ${req.method} request to ${req.url}`);
+  next();
 });
 
+// Обработчик вебхука
+app.use(express.json());
+app.post('/webhook/7336835570:AAEUQvOeTUup5rej7RYQUUbiuKCOoERHtoc', (req, res) => {
+  console.log('Received update from Telegram:', JSON.stringify(req.body));
+  bot.handleUpdate(req.body, res)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((error) => {
+      console.error('Error handling update:', error);
+      res.sendStatus(500);
+    });
+});
+
+// Маршрут для проверки статуса
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'Telegram bot is running' });
 });
 
+// Обработка ошибок
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).send('Internal Server Error');
+});
+
+// Запуск сервера
 const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
-async function startServer() {
-  try {
-    await initBot();
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error('Error starting server:', error);
-  }
-}
-
-startServer();
-
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-  bot.launch();
-}
-
-module.exports = app; // For Vercel serverless deployment
-
-
-
+module.exports = app;
 
 
 
