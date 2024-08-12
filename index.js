@@ -1,29 +1,49 @@
+const { Telegraf } = require('telegraf');
 const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
+const { setupBot } = require('./src/bot');
+const { initBot } = require('./src/services/coffeeService');
+const config = require('./config');
 
-// Middleware для обработки JSON
+const app = express();
+const bot = setupBot();
+
 app.use(express.json());
 
-// Простой маршрут для проверки работоспособности сервера
-app.get('/api/hello', (req, res) => {
-  res.status(200).json({ message: 'Привет, мир!' });
+app.post(`/webhook/${config.TELEGRAM_BOT_TOKEN_ALFA}`, async (req, res) => {
+  try {
+    await bot.handleUpdate(req.body);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error in webhook handler:', error);
+    res.sendStatus(500);
+  }
 });
 
-// Обработка POST-запросов
-app.post('/api/data', (req, res) => {
-  const { name } = req.body;
-  res.status(200).json({ message: `Привет, ${name}!` });
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'Telegram bot is running' });
 });
 
-// Запуск сервера
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
 
-// Экспорт для Vercel
-module.exports = app;
+async function startServer() {
+  try {
+    await initBot();
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error starting server:', error);
+  }
+}
 
+startServer();
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  bot.launch();
+}
+
+module.exports = app; // For Vercel serverless deployment
 
 
 
