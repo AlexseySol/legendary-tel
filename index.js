@@ -1,26 +1,33 @@
 const express = require('express');
 const { Telegraf } = require('telegraf');
-const { processMessage } = require('./src/handlers/messageHandlers');
 
 const app = express();
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN_ALFA);
 
 app.use(express.json());
 
-app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN_ALFA}`, (req, res) => {
-  bot.handleUpdate(req.body, res);
+// Middleware для логирования
+app.use((req, res, next) => {
+  console.log(`Received ${req.method} request to ${req.url}`);
+  next();
+});
+
+app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN_ALFA}`, async (req, res) => {
+  console.log('Received webhook request');
+  try {
+    await bot.handleUpdate(req.body, res);
+  } catch (error) {
+    console.error('Error in webhook handler:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 bot.on('text', async (ctx) => {
-  const userId = ctx.from.id.toString();
-  const userName = ctx.from.first_name || ctx.from.username;
-  
+  console.log('Received text message:', ctx.message.text);
   try {
-    const response = await processMessage(userId, userName, ctx.message.text);
-    ctx.reply(response);
+    await ctx.reply('Получил ваше сообщение!');
   } catch (error) {
-    console.error('Error processing message:', error);
-    ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
+    console.error('Error sending reply:', error);
   }
 });
 
@@ -28,13 +35,12 @@ app.get('/', (req, res) => {
   res.status(200).json({ message: 'Telegram bot webhook is running' });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 module.exports = app;
-
 
 
 
