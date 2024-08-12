@@ -1,54 +1,39 @@
 const express = require('express');
 const { Telegraf } = require('telegraf');
+const { processMessage } = require('./src/handlers/messageHandlers');
 
 const app = express();
-const bot = new Telegraf('7336835570:AAEUQvOeTUup5rej7RYQUUbiuKCOoERHtoc');
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN_ALFA);
 
-// Настройка бота
-bot.start((ctx) => ctx.reply('Добро пожаловать!'));
-bot.on('text', (ctx) => ctx.reply('Получил ваше сообщение!'));
-
-// Middleware для логирования
-app.use((req, res, next) => {
-  console.log(`Received ${req.method} request to ${req.url}`);
-  next();
-});
-
-// Обработчик вебхука
 app.use(express.json());
-app.post('/webhook/7336835570:AAEUQvOeTUup5rej7RYQUUbiuKCOoERHtoc', (req, res) => {
-  console.log('Received update from Telegram:', JSON.stringify(req.body));
-  bot.handleUpdate(req.body, res)
-    .then(() => {
-      res.sendStatus(200);
-    })
-    .catch((error) => {
-      console.error('Error handling update:', error);
-      res.sendStatus(500);
-    });
+
+app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN_ALFA}`, (req, res) => {
+  bot.handleUpdate(req.body, res);
 });
 
-// Маршрут для проверки статуса
+bot.on('text', async (ctx) => {
+  const userId = ctx.from.id.toString();
+  const userName = ctx.from.first_name || ctx.from.username;
+  
+  try {
+    const response = await processMessage(userId, userName, ctx.message.text);
+    ctx.reply(response);
+  } catch (error) {
+    console.error('Error processing message:', error);
+    ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
+  }
+});
+
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Telegram bot is running' });
+  res.status(200).json({ message: 'Telegram bot webhook is running' });
 });
 
-// Обработка ошибок
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).send('Internal Server Error');
-});
-
-// Запуск сервера
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
-
-
-
 
 
 
