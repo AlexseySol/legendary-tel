@@ -1,43 +1,51 @@
 const express = require('express');
 const { Telegraf } = require('telegraf');
+const config = require('./config');
+const { processMessage } = require('./src/handlers/messageHandlers');
 
 const app = express();
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN_ALFA);
+const bot = new Telegraf(config.TELEGRAM_BOT_TOKEN_ALFA);
 
 app.use(express.json());
 
-// Middleware для логирования
-app.use((req, res, next) => {
-  console.log(`Received ${req.method} request to ${req.url}`);
-  next();
-});
-
-app.post(`/webhook/${process.env.TELEGRAM_BOT_TOKEN_ALFA}`, async (req, res) => {
+app.post(`/webhook/${config.TELEGRAM_BOT_TOKEN_ALFA}`, async (req, res) => {
   console.log('Received webhook request');
   try {
-    await bot.handleUpdate(req.body, res);
+    await bot.handleUpdate(req.body);
+    console.log('Webhook processed successfully');
+    res.sendStatus(200);
   } catch (error) {
     console.error('Error in webhook handler:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
 
 bot.on('text', async (ctx) => {
-  console.log('Received text message:', ctx.message.text);
+  const userId = ctx.from.id.toString();
+  const userName = ctx.from.first_name || ctx.from.username;
+  const userMessage = ctx.message.text;
+  
   try {
-    await ctx.reply('Получил ваше сообщение!');
+    const response = await processMessage(userId, userName, userMessage);
+    ctx.reply(response);
   } catch (error) {
-    console.error('Error sending reply:', error);
+    console.error('Error processing message:', error);
+    ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
   }
+});
+
+bot.start((ctx) => {
+  const userName = ctx.from.first_name || ctx.from.username;
+  ctx.reply(`Привет, ${userName}! Я кофейный бот. Чем могу помочь?`);
 });
 
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'Telegram bot webhook is running' });
 });
 
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+const PORT = config.PORT;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
