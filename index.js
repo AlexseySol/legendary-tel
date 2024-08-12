@@ -1,5 +1,6 @@
 const express = require('express');
 const { Telegraf } = require('telegraf');
+const fetch = require('node-fetch');
 const config = require('./config');
 const { processMessage } = require('./src/handlers/messageHandlers');
 
@@ -12,7 +13,6 @@ app.post(`/webhook/${config.TELEGRAM_BOT_TOKEN_ALFA}`, async (req, res) => {
   console.log('Received webhook request');
   try {
     await bot.handleUpdate(req.body);
-    console.log('Webhook processed successfully');
     res.sendStatus(200);
   } catch (error) {
     console.error('Error in webhook handler:', error);
@@ -27,10 +27,10 @@ bot.on('text', async (ctx) => {
   
   try {
     const response = await processMessage(userId, userName, userMessage);
-    ctx.reply(response);
+    await ctx.reply(response);
   } catch (error) {
     console.error('Error processing message:', error);
-    ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
+    await ctx.reply('Извините, произошла ошибка при обработке вашего сообщения. Пожалуйста, попробуйте еще раз позже.');
   }
 });
 
@@ -49,7 +49,6 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
 
 
 

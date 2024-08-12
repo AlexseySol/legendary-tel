@@ -9,6 +9,7 @@ const { logBot } = require('../bot');
 
 let userStates = {};
 
+// Обрабатывает входящее сообщение пользователя
 async function processMessage(userId, userName, userMessage) {
   console.log(`Processing message from ${userName} (${userId}): ${userMessage}`);
 
@@ -61,6 +62,7 @@ async function processMessage(userId, userName, userMessage) {
 
       const newOrderData = extractOrderData(replyMessageWithTags);
       
+      // Проверяем, начался ли процесс заказа
       if (Object.keys(newOrderData).length > 0) {
         userStates[userId].orderStarted = true;
       }
