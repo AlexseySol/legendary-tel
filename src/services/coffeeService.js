@@ -10,12 +10,8 @@ async function loadCoffeeData() {
     coffeeData = JSON.parse(data);
     console.log('Coffee data loaded successfully');
   } catch (error) {
-    console.warn(`Error loading coffee data: ${error.message}`);
-    coffeeData = {
-      'Эспрессо': { description: 'Крепкий кофе', price: 30 },
-      'Капучино': { description: 'Кофе с молочной пенкой', price: 40 },
-    };
-    console.warn('Using fallback coffee data');
+    console.error(`Error loading coffee data: ${error.message}`);
+    throw error; // Выбрасываем ошибку, чтобы обработать её на уровне выше
   }
 }
 
@@ -30,7 +26,10 @@ async function initBot() {
   }
 }
 
-function getCoffeeData() {
+async function getCoffeeData() {
+  if (Object.keys(coffeeData).length === 0) {
+    await loadCoffeeData();
+  }
   return coffeeData;
 }
 

@@ -27,8 +27,9 @@ async function processMessage(userId, userName, userMessage) {
 
   try {
     const promptTemplate = await fs.readFile(path.join(process.cwd(), 'prompts', 'prompt.js'), 'utf8');
+    const coffeeData = await getCoffeeData(); // Получаем актуальные данные о кофе
     const filledPrompt = promptTemplate
-      .replace('{{COFFEE_DOCUMENT}}', JSON.stringify(getCoffeeData()))
+      .replace('{{COFFEE_DOCUMENT}}', JSON.stringify(coffeeData))
       .replace('{{USER_INPUT}}', userMessage)
       .replace('{{USER_NAME}}', userName);
 
